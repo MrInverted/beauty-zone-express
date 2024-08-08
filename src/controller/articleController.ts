@@ -12,7 +12,7 @@ articleRouter.get("/limited", article.allAndLimited);
 articleRouter.get("/:articleId", article.getOne);
 
 articleRouter.post("/", isAuth, multerWithFields, article.uploading, article.create);
-articleRouter.patch("/:articleId", isAuth, () => { });
+articleRouter.put("/:articleId", isAuth, multerWithFields, article.uploading, article.update);
 articleRouter.delete("/:articleId", isAuth, article.deleteById);
 
 export { articleRouter } 

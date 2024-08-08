@@ -30,6 +30,8 @@ export const changePassword = async (req: Request<{}, {}, IRequest>, res: Respon
 
     user.password = hashPassword;
 
+    await user.save()
+
     return res.json({ success: "Пароль успешно изменен", user });
   } catch (error) {
     console.log(error)
