@@ -42,6 +42,7 @@ export const update = async (req: Request<{ articleId: string }, {}, IArticleMod
     const token = req.headers.authorization?.split(" ").at(1) as string;
 
     req.body.ownerId = jwt.decode(token) as string;
+    req.body.services = (typeof req.body.services === "string") ? [req.body.services] : req.body.services;
 
     const articleToDb = await ArticleModel.findOneAndUpdate({ _id: req.params.articleId }, { ...req.body }, { new: true });
 

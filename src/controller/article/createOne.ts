@@ -15,6 +15,7 @@ export const create = async (req: Request<{}, {}, IArticleModel>, res: Response)
 
   const token = req.headers.authorization?.split(" ").at(1) as string;
   req.body.ownerId = jwt.decode(token) as string;
+  req.body.services = (typeof req.body.services === "string") ? [req.body.services] : req.body.services;
 
   try {
     const articleToDb = await ArticleModel.create(req.body);
