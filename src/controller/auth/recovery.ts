@@ -2,6 +2,16 @@ import { Request, Response } from "express";
 import { UserModel } from "../../models/userModel.ts";
 import { sendMail } from '../../utils/mailer.ts';
 
+/**
+ * req: {
+ *  email: string
+ * }
+ * 
+ * res: {
+ *  success: string
+ * }
+ */
+
 export const recovery = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
@@ -10,7 +20,7 @@ export const recovery = async (req: Request, res: Response) => {
 
     const isUser = await UserModel.findOne({ email });
 
-    if (!isUser) return res.status(404).json({ err: "Пользователь с данным email не найден" });
+    if (!isUser) return res.status(401).json({ err: "Пользователь с данным email не найден" });
 
     const activationCode = "123456789";
 
@@ -21,7 +31,7 @@ export const recovery = async (req: Request, res: Response) => {
       but i chose easier way just for example
      */
 
-    sendMail(email, JSON.stringify({ activationCode }, null, 2));
+    // sendMail(email, JSON.stringify({ activationCode }, null, 2));
 
     return res.json({ success: "Письмо было отправлено" });
   } catch (error) {

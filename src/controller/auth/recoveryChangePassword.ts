@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Request, Response } from "express";
 import { UserModel } from "../../models/userModel.ts";
+import { checkAllFields } from '../../utils/checkAllFields.ts';
 
 interface IRequest {
   email: string;
@@ -9,21 +10,36 @@ interface IRequest {
   passwordTwo: string;
 }
 
+/**
+ * req: {
+ *   email: string
+ *   code: string
+ *   passwordOne: string
+ *   passwordTwo: string
+ * }
+ * 
+ * res: {
+ *   success: string
+ * }
+ */
+
 export const recoveryChangePassword = async (req: Request<{}, {}, IRequest>, res: Response) => {
   try {
     const { email, passwordOne, passwordTwo, code } = req.body;
 
-    const activationCode = "123456789";
+    const isFieldsMissed = checkAllFields({ email, passwordOne, passwordTwo, code });
 
-    if (code !== activationCode) return res.status(400).json({ err: "Неверный код активации" });
-
-    if (!passwordOne) return res.status(400).json({ err: "Пароль отсутствует" });
+    if (isFieldsMissed) return res.status(400).json({ err: isFieldsMissed });
 
     if (passwordOne !== passwordTwo) return res.status(400).json({ err: "Пароли не совпадают" });
 
+    const activationCode = "123456789";
+
+    if (code !== activationCode) return res.status(401).json({ err: "Неверный код активации" });
+
     const user = await UserModel.findOne({ email });
 
-    if (!user) return res.status(404).json({ err: "Пользователь с данным email не найден" });
+    if (!user) return res.status(401).json({ err: "Пользователь с данным email не найден" });
 
     const bcryptedPassword = bcrypt.hashSync(passwordOne, 8);
 

@@ -2,18 +2,43 @@ import bcrypt from 'bcrypt';
 import { Request, Response } from "express";
 import { IUserModel, UserModel } from "../../models/userModel.ts";
 import { sendMail } from '../../utils/mailer.ts';
+import { checkAllFields } from '../../utils/checkAllFields.ts';
+
+/**
+ * req: {
+ *   name: string
+ *   surname: string
+ *   email: string
+ *   password: string
+ *   state: string
+ *   city: string
+ *   street: string
+ *   building: string
+ * }
+ * 
+ * res: {
+ *  success: string;
+ *  userWithPassword: {
+ *   name: string
+ *   surname: string
+ *   email: string
+ *   password: string
+ *   state: string
+ *   city: string
+ *   street: string
+ *   building: string
+ *   _id: string
+ *   }
+ * }
+ */
 
 export const register = async (req: Request<{}, {}, IUserModel>, res: Response) => {
   try {
     const { name, surname, email, password, state, city, street, building } = req.body;
-    const isAllFields = { name, surname, email, password, state, city, street, building };
 
-    const fieldsAreMissed = Object.entries(isAllFields).reduce<string[]>((accum, [key, value]) => {
-      if (!value) accum.push(key);
-      return accum;
-    }, [])
+    const isFieldsMissed = checkAllFields({ name, surname, email, password, state, city, street, building });
 
-    if (fieldsAreMissed.length) return res.status(400).json({ err: `Поля ${fieldsAreMissed.join(", ")} не указаны` });
+    if (isFieldsMissed) return res.status(400).json({ err: isFieldsMissed });
 
     const isAlreadyRegistered = await UserModel.findOne({ email: email });
 
@@ -25,7 +50,7 @@ export const register = async (req: Request<{}, {}, IUserModel>, res: Response) 
 
     const userWithPassword = { ...user.toObject(), password };
 
-    sendMail(email, JSON.stringify(isAllFields, null, 2));
+    // sendMail(email, JSON.stringify(isAllFields, null, 2));
 
     return res.status(201).json({ success: "Пользователь успешно зарегистрирован", userWithPassword });
   } catch (error) {
